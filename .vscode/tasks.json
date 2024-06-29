@@ -12,7 +12,7 @@
                 "${fileDirname}\\Window.cpp",
                 "-o",
                 "${fileDirname}\\CSM.exe",
-                "-mwindows", // For Hiding Console on Public Release
+                "-mwindows", // For Hiding Console
                 "-lgdi32",
                 "-lstdc++",
                 "-static"
