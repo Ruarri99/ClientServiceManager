@@ -15,8 +15,7 @@
                 "-mwindows", // For Hiding Console on Public Release
                 "-lgdi32",
                 "-lstdc++",
-                "-static-libgcc",
-                "-static-libstdc++"
+                "-static"
             ],
             "options": {
                 "cwd": "${fileDirname}"
