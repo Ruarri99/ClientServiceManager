@@ -10,6 +10,7 @@ class DISPLAY:
 		self.y = y
 		self.displayWidth = width
 		self.displayHeight = height
+		self.originalChildren = []
 		self.children = []
 		self.lastMousePos = None
 		self.window = window
@@ -18,6 +19,7 @@ class DISPLAY:
 		self.rowHeight = 20
 		self.rowsY = self.y
 		self.excessHeight = None
+		self.searchExcessHeight = None
 
 		# Adjuster Specs
 		self.adjusterWidth = 10
@@ -63,22 +65,26 @@ class DISPLAY:
 		del self.columnsAdjusters[0]
 
 
+	def set_original_children(self, children):
+		self.originalChildren = children
+		self.set_children(self.originalChildren)
+		self.loading_render_children_text()
+
+
 	def set_children(self, children):
 		self.clear_children()
 		for child in children:
 			self.children.append(child)
 
-		
-
 		self.excessHeight = len(self.children)*self.rowHeight-self.displayHeight
 		if self.excessHeight > 0:
 			self.scrollbar.set_enabled(True)
 			self.scrollbar.set_length(self.displayHeight-self.displayHeight*(self.excessHeight/(self.displayHeight+self.excessHeight)))
-
+		else:
+			self.scrollbar.set_enabled(False)
 
 		self.set_children_height()
 		self.initialise_children_text()
-		self.render_children_text()
 
 
 	def clear_children(self):
@@ -106,14 +112,20 @@ class DISPLAY:
 			self.children[i].initialise_text(self.columnsPixel, self.rowsY-self.scrollbar.get_pos()*self.excessHeight, self.columnsWidth, self.rowHeight, textColour, backColour)
 
 
-	def render_children_text(self):
+	def loading_render_children_text(self):
 		windowInfo = pygame.display.Info()
 		for i in range(len(self.children)):
 			self.children[i].render_texts()
 			pygame.draw.rect(self.window, sv.darkBeige, (windowInfo.current_w//4, round(windowInfo.current_h*(4/5)), round(windowInfo.current_w//2), 26))
 			pygame.draw.rect(self.window, sv.orange, (windowInfo.current_w//4+3, round(windowInfo.current_h*(4/5))+3, round(i/len(self.children)*(windowInfo.current_w//2)), 20))
 			pygame.display.update()
-			
+
+
+	def render_children_text(self):
+		for i in range(len(self.children)):
+			self.children[i].render_texts()
+
+
 
 	def check_click(self, mousePos):
 		if mousePos[0] > self.x+self.displayWidth:
@@ -123,7 +135,7 @@ class DISPLAY:
 			for column in self.columnsAdjusters:
 				if column.collidepoint(mousePos):
 					self.move_adjuster(column)
-
+		
 
 	def check_hover(self, mousePos):
 		hovering = False
@@ -139,14 +151,32 @@ class DISPLAY:
 
 
 	def mouse_scroll(self, scroll):
-		self.scrollbar.change_pos(scroll)
+		if self.scrollbar.get_enabled():
+			self.scrollbar.change_pos(scroll)
 
 
-	def draw(self, window):
+	def search_children(self, text):
+		if text:
+			results = []
+			results.append(self.originalChildren[0])
+			for child in self.originalChildren[1:]:
+				if child.search_text(text):
+					results.append(child)
+
+			self.set_children(results)
+			self.render_children_text()
+		elif len(self.children) != len(self.originalChildren):
+			self.set_children(self.originalChildren)
+		else:
+			self.render_children_text()
+
+
+	def draw(self, window, searchBox):
 		# Display Background
 		pygame.draw.rect(window, sv.white, (self.x, self.y, self.displayWidth, self.displayHeight))
 
 		# Clients
+		self.search_children(searchBox.get_text())
 		for i in range(1, len(self.children)):
 			self.children[i].draw(window, self.rowsY+self.children[i].get_height()*self.rowHeight-self.scrollbar.get_pos()*self.excessHeight)
 

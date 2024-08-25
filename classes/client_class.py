@@ -19,6 +19,12 @@ class CLIENT:
 		self.addressText = textbox.TEXT(self.address)
 		self.texts = [self.clientNumberText, self.nameText, self.phoneText, self.emailText, self.addressText]
 
+	def search_text(self, text):
+		results = [t.get_text() for t in self.texts]
+		for result in results:
+			if text in result:
+				return True
+		return False
 
 	def get_name(self):
 		return self.name
@@ -45,11 +51,11 @@ class CLIENT:
 		self.addressText.initialise(columnsX[4], rowsY+self.height*rowHeight, columnsW[4], rowHeight, textColour, backColour)
 
 	def render_specific_text(self, index, x=None, columnsW=None):
-		self.texts[index].render(self.texts[index].get_text(), x[index], columnsW[index])
+		self.texts[index].render(x=x[index], maxW=columnsW[index])
 
 	def render_texts(self):
 		for text in self.texts:
-			text.render(text.get_text())
+			text.render()
 
 	def draw(self, window, y):
 		for text in self.texts:

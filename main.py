@@ -1,5 +1,6 @@
 import pygame, os
 import classes.textbox_class as textc
+import classes.editable_textbox_class as etextc
 import classes.client_class as clientc
 import classes.info_display_class as displayc
 import classes.static_variables as sv
@@ -66,14 +67,24 @@ clientFile.close()
 
 # ~~~ INFO DISPLAY ~~~~
 
+
 clientDisplayRect = pygame.Rect(20, 50, width-60, height-70)
 clientDisplay = displayc.DISPLAY(clientDisplayRect.x, clientDisplayRect.y, clientDisplayRect.width, clientDisplayRect.height, window)
-clientDisplay.set_children(clients)
+clientDisplay.set_original_children(clients)
 
 clientDisplayFrameSize = 2
 clientDisplayFrameRect = pygame.Rect(clientDisplayRect.x-clientDisplayFrameSize, clientDisplayRect.y-clientDisplayFrameSize, clientDisplayRect.width+clientDisplayFrameSize+clientDisplay.get_scrollbar_size()[0], clientDisplayRect.height+clientDisplayFrameSize)
 
-# ~~~~ Main Loop ~~~~
+
+# ~~~~ SEARCH BOX ~~~~
+
+
+searchBox = etextc.TEXT(20, 10, 400, 30, 2)
+
+
+# ~~~~ MAIN LOOP ~~~~
+
+
 run = True
 while run:
 
@@ -86,16 +97,24 @@ while run:
 		if event.type == pygame.QUIT:
 			run = False
 
+		elif event.type == searchBox.get_user_event():
+			searchBox.blink_cursor()
+
 		elif event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_ESCAPE:
+			if searchBox.get_entering_text():
+				searchBox.check_input(event.unicode, event.key)
+			elif event.key == pygame.K_ESCAPE:
 				run = False
 
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 1:
-				clientDisplay.check_click(pygame.mouse.get_pos())
+				mousePos = pygame.mouse.get_pos()
+				clientDisplay.check_click(mousePos)
+				searchBox.check_click(mousePos)
 
 		elif event.type == pygame.MOUSEWHEEL:
 			clientDisplay.mouse_scroll(event.y)
+			
 
 		mousePos = pygame.mouse.get_pos()
 		if clientDisplay.check_hover(mousePos):
@@ -106,13 +125,12 @@ while run:
 
 	# ~~~ DISPLAY ~~~
 
-
 	window.fill(sv.white)
 
-
-	clientDisplay.draw(window)
+	# Client Display
+	clientDisplay.draw(window, searchBox)
 	
-	# Draw Frame
+	# Frame
 	pygame.draw.rect(window, sv.beige, (0, 0, width, 50))
 	pygame.draw.rect(window, sv.beige, (0, 0, 20, height))
 	pygame.draw.rect(window, sv.beige, (0, height-20, width, 20))
@@ -122,6 +140,9 @@ while run:
 	pygame.draw.line(window, sv.darkBeige, clientDisplayFrameRect.topright, clientDisplayFrameRect.bottomright, 2)
 	pygame.draw.line(window, sv.darkBeige, clientDisplayFrameRect.bottomleft, clientDisplayFrameRect.bottomright, 2)
 	pygame.draw.line(window, sv.darkBeige, clientDisplayFrameRect.topleft, clientDisplayFrameRect.bottomleft, 2)
+
+	# Search Box
+	searchBox.draw(window)
 
 	pygame.display.update()
 	clock.tick(fps)

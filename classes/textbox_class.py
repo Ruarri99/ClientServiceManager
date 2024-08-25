@@ -60,9 +60,10 @@ class TEXT:
 		return text
 
 
-	def render(self, text, x=None, maxW=None):
+	def render(self, text=None, x=None, maxW=None):
 		if x: self.x = x
 		if maxW: self.maxW = maxW
+		if not text: text = self.originalText
 		text = self.check_width(text)
 		self.renderedText = self.font.render(text, True, self.textColour, self.backColour)
 		self.textRect = self.renderedText.get_rect()
